@@ -80,7 +80,7 @@ python test_logger_manager.py
 python example_usage.py
 
 # 快速测试（macOS用户推荐）
-python quick_test_macos.py
+python test_cross_platform_compatibility.py
 ```
 
 ## 📝 常见使用场景

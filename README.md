@@ -333,7 +333,7 @@ def main():
 
 运行快速测试脚本验证安装：
 ```bash
-python quick_test_macos.py
+python test_cross_platform_compatibility.py
 ```
 
 ## 许可

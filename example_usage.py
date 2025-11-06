@@ -56,7 +56,7 @@ def example_single_process():
     """示例1: 单进程使用"""
     print("\n=== 示例1: 单进程使用 ===")
     
-    log_path = "/tmp/app.log"
+    log_path = "./tmp/app.log"
     
     # 第一次获取logger
     logger1 = get_logger(log_path, name="main")
@@ -78,7 +78,7 @@ def example_multi_process():
     """示例2: 多进程使用"""
     print("\n=== 示例2: 多进程使用 ===")
     
-    log_path = "/tmp/multi_process.log"
+    log_path = "./tmp/multi_process.log"
     
     # 主进程也记录日志
     main_logger = get_logger(log_path, name="main")
@@ -107,9 +107,9 @@ def example_multiple_paths():
     print("\n=== 示例3: 多个日志路径 ===")
     
     # 不同模块使用不同的日志文件
-    app_logger = get_logger("/tmp/app.log", name="app")
-    error_logger = get_logger("/tmp/error.log", name="error")
-    access_logger = get_logger("/tmp/access.log", name="access")
+    app_logger = get_logger("./tmp/app.log", name="app")
+    error_logger = get_logger("./tmp/error.log", name="error")
+    access_logger = get_logger("./tmp/access.log", name="access")
     
     app_logger.info("应用程序启动")
     error_logger.error("这是一个错误日志")
@@ -132,7 +132,7 @@ def example_environment_config():
     
     # 重新导入以应用新配置（实际使用中应在程序启动前设置）
     # 这里只是演示，实际上LoggerManager是单例
-    logger = get_logger("/tmp/debug.log", name="debug")
+    logger = get_logger("./tmp/debug.log", name="debug")
     
     logger.debug("这是DEBUG级别日志")
     logger.info("这是INFO级别日志")
@@ -147,7 +147,7 @@ def example_same_path_different_processes():
     """示例5: 同一路径不同进程"""
     print("\n=== 示例5: 同一路径不同进程（核心场景）===")
     
-    log_path = "/tmp/shared.log"
+    log_path = "./tmp/shared.log"
     
     # 主进程记录
     main_logger = get_logger(log_path, name="main")
@@ -191,4 +191,4 @@ if __name__ == "__main__":
     example_multi_process()
     example_same_path_different_processes()
     
-    print("\n所有示例运行完成！请查看 /tmp 目录下的日志文件。")
+    print("\n所有示例运行完成！请查看 ./tmp 目录下的日志文件。")

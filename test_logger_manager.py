@@ -39,6 +39,8 @@ class TestLoggerManager(unittest.TestCase):
         import shutil
         if os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
+        if os.path.exists("test.log"):
+            os.remove("test.log")
     
     def test_singleton_pattern(self):
         """测试单例模式"""
