@@ -11,6 +11,15 @@ import time
 from logger_manager import LoggerManager, get_logger, get_path_info, cleanup_current_process
 
 
+# 模块级别的工作函数，用于多进程测试
+def _test_worker(log_path):
+    """测试用的工作进程函数"""
+    logger = get_logger(log_path, name="worker")
+    pid = os.getpid()
+    logger.info(f"Worker PID: {pid}")
+    time.sleep(0.1)
+
+
 class TestLoggerManager(unittest.TestCase):
     """日志管理器测试用例"""
     
@@ -80,12 +89,6 @@ class TestLoggerManager(unittest.TestCase):
     
     def test_multiprocess_logging(self):
         """测试多进程日志写入"""
-        def worker():
-            logger = get_logger(self.test_log_path, name="worker")
-            pid = os.getpid()
-            logger.info(f"Worker PID: {pid}")
-            time.sleep(0.1)
-        
         # 主进程写入
         main_logger = get_logger(self.test_log_path, name="main")
         main_logger.info("Main process")
@@ -93,7 +96,7 @@ class TestLoggerManager(unittest.TestCase):
         # 启动多个子进程
         processes = []
         for _ in range(3):
-            p = Process(target=worker)
+            p = Process(target=_test_worker, args=(self.test_log_path,))
             p.start()
             processes.append(p)
         

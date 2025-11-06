@@ -286,6 +286,56 @@ python example_usage.py
 
 无需额外安装第三方依赖。
 
+## 跨平台兼容性
+
+✅ **完全兼容以下操作系统：**
+- Linux (Ubuntu, CentOS, etc.)
+- macOS (10.14+)
+- Windows (10+)
+
+**注意事项：**
+- 在 macOS 和 Windows 上，multiprocessing 使用 `spawn` 启动模式
+- 所有多进程函数都已在模块级别定义，确保可以被正确序列化
+- 详见 [MACOS_FIX.md](MACOS_FIX.md) 了解技术细节
+
+## 故障排除
+
+### macOS 上的 "Can't pickle" 错误
+
+如果你在 macOS 上遇到类似错误：
+```
+AttributeError: Can't pickle local object 'function_name'
+```
+
+**原因：** macOS 使用 `spawn` 模式启动进程，需要序列化所有对象。
+
+**解决方案：** 确保所有作为 `Process` target 的函数都定义在模块级别（不要嵌套在其他函数内）。
+
+**示例：**
+```python
+# ❌ 错误 - 局部函数
+def main():
+    def worker():
+        pass
+    p = Process(target=worker)  # 会失败
+
+# ✅ 正确 - 模块级函数
+def worker():
+    pass
+
+def main():
+    p = Process(target=worker)  # 正常工作
+```
+
+详细说明请参考 [MACOS_COMPATIBILITY.md](MACOS_COMPATIBILITY.md)
+
+### 快速测试
+
+运行快速测试脚本验证安装：
+```bash
+python quick_test_macos.py
+```
+
 ## 许可
 
 MIT License

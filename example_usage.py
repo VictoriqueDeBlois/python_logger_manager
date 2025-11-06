@@ -34,6 +34,24 @@ def worker_task(worker_id: int, log_path: str):
     cleanup_current_process()
 
 
+def child_process_task(log_path: str):
+    """
+    子进程任务函数（用于示例5）
+    
+    Args:
+        log_path: 日志文件路径
+    """
+    logger = get_logger(log_path, name="child")
+    pid = os.getpid()
+    logger.info(f"子进程 PID:{pid} 开始工作")
+    
+    for i in range(3):
+        logger.info(f"子进程 PID:{pid} - 任务 {i+1}")
+        time.sleep(0.3)
+    
+    logger.info(f"子进程 PID:{pid} 完成")
+
+
 def example_single_process():
     """示例1: 单进程使用"""
     print("\n=== 示例1: 单进程使用 ===")
@@ -131,18 +149,6 @@ def example_same_path_different_processes():
     
     log_path = "/tmp/shared.log"
     
-    def child_process():
-        """子进程函数"""
-        logger = get_logger(log_path, name="child")
-        pid = os.getpid()
-        logger.info(f"子进程 PID:{pid} 开始工作")
-        
-        for i in range(3):
-            logger.info(f"子进程 PID:{pid} - 任务 {i+1}")
-            time.sleep(0.3)
-        
-        logger.info(f"子进程 PID:{pid} 完成")
-    
     # 主进程记录
     main_logger = get_logger(log_path, name="main")
     main_logger.info(f"主进程 PID:{os.getpid()} 开始")
@@ -152,8 +158,8 @@ def example_same_path_different_processes():
     print(f"启动前 - PIDs: {info['pids']}")
     
     # 启动子进程
-    p1 = Process(target=child_process)
-    p2 = Process(target=child_process)
+    p1 = Process(target=child_process_task, args=(log_path,))
+    p2 = Process(target=child_process_task, args=(log_path,))
     
     p1.start()
     p2.start()
