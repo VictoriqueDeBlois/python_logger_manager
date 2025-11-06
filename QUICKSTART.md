@@ -39,8 +39,10 @@ set LOG_CONSOLE=true
 ```
 
 或在Python代码中设置：
+
 ```python
 import os
+
 os.environ['LOG_LEVEL'] = 'DEBUG'
 os.environ['LOG_CONSOLE'] = 'true'
 ```
@@ -107,10 +109,11 @@ app_logger.info("Server started on port 8000")
 from multiprocessing import Pool
 from logger_manager import get_logger
 
+
 def process_data(data_id):
     logger = get_logger("logs/pipeline.log", name=f"worker_{data_id}")
     logger.info(f"Processing data {data_id}")
-    
+
     try:
         # 处理数据
         result = heavy_computation(data_id)
@@ -119,6 +122,7 @@ def process_data(data_id):
     except Exception as e:
         logger.error(f"Failed to process data {data_id}: {e}")
         raise
+
 
 if __name__ == "__main__":
     with Pool(processes=4) as pool:
@@ -133,15 +137,18 @@ from logger_manager import get_logger
 
 logger = get_logger("logs/tasks.log", name="scheduler")
 
+
 def backup_database():
     logger.info("Starting database backup")
     # 执行备份...
     logger.info("Database backup completed")
 
+
 def cleanup_old_files():
     logger.info("Starting file cleanup")
     # 清理文件...
     logger.info("File cleanup completed")
+
 
 # 设置定时任务
 schedule.every().day.at("02:00").do(backup_database)
@@ -157,19 +164,21 @@ while True:
 
 ### 环境变量
 
-| 变量 | 可选值 | 默认值 | 说明 |
-|------|--------|--------|------|
-| `LOG_LEVEL` | DEBUG/INFO/WARNING/ERROR/CRITICAL | INFO | 日志级别 |
-| `LOG_CONSOLE` | true/false/1/0/yes/no | true | 是否输出到控制台 |
+| 变量            | 可选值                               | 默认值  | 说明       |
+|---------------|-----------------------------------|------|----------|
+| `LOG_LEVEL`   | DEBUG/INFO/WARNING/ERROR/CRITICAL | INFO | 日志级别     |
+| `LOG_CONSOLE` | true/false/1/0/yes/no             | true | 是否输出到控制台 |
 
 ### 日志格式
 
 默认格式：
+
 ```
 [2025-11-06 10:30:45] [INFO] [PID:1234] [logger_name] - 日志消息
 ```
 
 包含信息：
+
 - 时间戳
 - 日志级别
 - 进程ID
@@ -239,7 +248,7 @@ logger.error("Database error")
 ```python
 def process_payment(amount, user_id):
     logger.info(f"Payment processing started: amount={amount}, user={user_id}")
-    
+
     try:
         result = payment_gateway.charge(amount)
         logger.info(f"Payment successful: transaction_id={result.id}")
@@ -282,11 +291,11 @@ logger.info("Processing complete")
 ### 3. 使用合适的日志级别
 
 ```python
-logger.debug("Detailed debugging information")     # 开发调试
-logger.info("Normal operational messages")         # 常规信息
-logger.warning("Warning messages")                 # 警告
-logger.error("Error messages")                     # 错误
-logger.critical("Critical problems")               # 严重错误
+logger.debug("Detailed debugging information")  # 开发调试
+logger.info("Normal operational messages")  # 常规信息
+logger.warning("Warning messages")  # 警告
+logger.error("Error messages")  # 错误
+logger.critical("Critical problems")  # 严重错误
 ```
 
 ## 📞 获取帮助

@@ -53,6 +53,7 @@ class TestLoggerManager(unittest.TestCase):
 ### 1. test_logger_manager.py
 
 **修改内容：**
+
 - 添加模块级函数 `_test_worker(log_path)`
 - 更新 `test_multiprocess_logging` 方法使用该函数
 
@@ -62,6 +63,7 @@ class TestLoggerManager(unittest.TestCase):
 ### 2. example_usage.py
 
 **修改内容：**
+
 - 添加模块级函数 `child_process_task(log_path)`
 - 更新 `example_same_path_different_processes` 函数使用该函数
 
@@ -81,9 +83,10 @@ class TestLoggerManager(unittest.TestCase):
 ### 为什么不用 `if __name__ == '__main__'`？
 
 有些人建议使用：
+
 ```python
 if __name__ == '__main__':
-    # 启动进程
+# 启动进程
 ```
 
 这是必要的，但**不能解决局部函数的问题**。局部函数依然无法被pickle，必须移到模块级别。

@@ -15,12 +15,12 @@ PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无�
 
 ### 文件锁定机制对比
 
-| 特性 | Linux | Windows |
-|------|-------|---------|
-| **文件锁定** | 软锁定（advisory locking） | 硬锁定（mandatory locking） |
-| **删除打开的文件** | ✅ 允许（延迟删除） | ❌ 禁止（立即报错） |
-| **文件句柄行为** | 可以删除仍在使用的文件 | 必须先关闭文件句柄 |
-| **inode机制** | 有（引用计数） | 无（直接锁定） |
+| 特性          | Linux                 | Windows                |
+|-------------|-----------------------|------------------------|
+| **文件锁定**    | 软锁定（advisory locking） | 硬锁定（mandatory locking） |
+| **删除打开的文件** | ✅ 允许（延迟删除）            | ❌ 禁止（立即报错）             |
+| **文件句柄行为**  | 可以删除仍在使用的文件           | 必须先关闭文件句柄              |
+| **inode机制** | 有（引用计数）               | 无（直接锁定）                |
 
 ### Linux 行为
 
@@ -64,6 +64,7 @@ def tearDown(self):
 ### 为什么Linux上没问题
 
 在Linux上，即使文件被打开，`shutil.rmtree()` 也能成功"删除"它：
+
 - 文件在目录中被移除（unlink）
 - 但inode和数据块仍然存在
 - 当最后一个文件句柄关闭时，文件才真正删除
@@ -79,7 +80,7 @@ def tearDown(self):
     import logging
     import gc
     import time
-    
+
     # 1. 关闭所有logger的handlers
     for logger_name in list(logging.Logger.manager.loggerDict.keys()):
         logger = logging.getLogger(logger_name)
@@ -87,18 +88,18 @@ def tearDown(self):
         for handler in handlers:
             handler.close()  # 关闭文件句柄
             logger.removeHandler(handler)
-    
+
     # 2. 关闭root logger的handlers
     for handler in logging.root.handlers[:]:
         handler.close()
         logging.root.removeHandler(handler)
-    
+
     # 3. 强制垃圾回收
     gc.collect()
-    
+
     # 4. 等待Windows释放文件锁
     time.sleep(0.1)
-    
+
     # 5. 清理临时文件
     if os.path.exists(self.temp_dir):
         try:
@@ -118,6 +119,7 @@ logger.removeHandler(handler)  # 从logger中移除
 ```
 
 必须关闭**所有**logger的handlers，包括：
+
 - 测试中创建的logger
 - root logger
 - 任何子logger
@@ -156,7 +158,8 @@ except PermissionError:
 
 **问题：** Windows Defender或其他杀毒软件可能扫描新创建的文件
 
-**解决：** 
+**解决：**
+
 - 将测试目录添加到杀毒软件的排除列表
 - 或使用更长的等待时间
 
@@ -165,6 +168,7 @@ except PermissionError:
 **问题：** Windows Search索引服务可能打开文件
 
 **解决：**
+
 - 禁用临时目录的索引
 - 或在测试前关闭索引服务
 
@@ -173,6 +177,7 @@ except PermissionError:
 **问题：** Windows文件系统缓存可能延迟释放句柄
 
 **解决：**
+
 - 使用 `gc.collect()` 强制清理
 - 增加等待时间
 
@@ -259,6 +264,7 @@ python test_logger_manager.py
 ```
 
 **预期输出：**
+
 ```
 test_cleanup_pid ... ok
 test_console_output_from_env ... ok

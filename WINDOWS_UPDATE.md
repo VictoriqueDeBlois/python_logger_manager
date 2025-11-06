@@ -9,6 +9,7 @@
 ### test_logger_manager.py 的 tearDown 方法
 
 **修改前：**
+
 ```python
 def tearDown(self):
     """测试后清理"""
@@ -18,6 +19,7 @@ def tearDown(self):
 ```
 
 **修改后：**
+
 ```python
 def tearDown(self):
     """测试后清理"""
@@ -64,11 +66,11 @@ def tearDown(self):
 
 ### Windows vs Linux 文件系统差异
 
-| 特性 | Linux | Windows |
-|------|-------|---------|
-| 删除打开的文件 | ✅ 允许 | ❌ 禁止 |
-| 文件锁定 | 软锁定 | 硬锁定 |
-| 删除行为 | 标记删除，延迟清理 | 立即阻止 |
+| 特性      | Linux     | Windows |
+|---------|-----------|---------|
+| 删除打开的文件 | ✅ 允许      | ❌ 禁止    |
+| 文件锁定    | 软锁定       | 硬锁定     |
+| 删除行为    | 标记删除，延迟清理 | 立即阻止    |
 
 ### 问题发生过程
 
@@ -95,6 +97,7 @@ python test_logger_manager.py
 ```
 
 **预期结果：**
+
 ```
 test_cleanup_pid ... ok
 test_console_output_from_env ... ok
@@ -126,6 +129,7 @@ OK  ✅
 ## 🌍 跨平台兼容性
 
 修复后完全支持：
+
 - ✅ Linux（fork/spawn模式）
 - ✅ macOS（spawn模式，已修复pickle问题）
 - ✅ Windows（spawn模式，已修复文件锁问题）
@@ -135,14 +139,14 @@ OK  ✅
 想了解更多技术细节？请查看：
 
 - **WINDOWS_FIX.md** - 完整的技术说明文档
-  - Windows文件锁定机制详解
-  - Linux vs Windows差异对比
-  - 调试技巧和最佳实践
-  - 其他常见Windows文件锁问题
+    - Windows文件锁定机制详解
+    - Linux vs Windows差异对比
+    - 调试技巧和最佳实践
+    - 其他常见Windows文件锁问题
 
 - **README.md** - 主文档
-  - 包含故障排除章节
-  - Windows兼容性说明
+    - 包含故障排除章节
+    - Windows兼容性说明
 
 ## 💡 在你的代码中使用
 
