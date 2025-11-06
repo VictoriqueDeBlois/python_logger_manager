@@ -79,7 +79,7 @@ python test_logger_manager.py
 # 运行示例
 python example_usage.py
 
-# 快速测试（macOS用户推荐）
+# 快速测试跨平台兼容性
 python test_cross_platform_compatibility.py
 ```
 

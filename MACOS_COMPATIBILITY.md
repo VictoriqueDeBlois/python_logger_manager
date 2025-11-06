@@ -83,7 +83,7 @@ def example_same_path_different_processes():
 | 文件 | 用途 |
 |------|------|
 | `MACOS_FIX.md` | 详细的技术文档和修复说明 |
-| `quick_test_macos.py` | 快速验证脚本 |
+| `test_cross_platform_compatibility.py` | 快速验证脚本 |
 | `CHANGELOG.md` | 版本变更记录 |
 | `MACOS_COMPATIBILITY.md` | 本文档 |
 
@@ -233,4 +233,4 @@ def main():
 - ✅ 添加了详细文档
 - ✅ 提供了快速验证工具
 
-如果你在macOS上遇到任何问题，请运行 `quick_test_macos.py` 进行诊断。
+如果你在macOS上遇到任何问题，请运行 `test_cross_platform_compatibility.py` 进行诊断。

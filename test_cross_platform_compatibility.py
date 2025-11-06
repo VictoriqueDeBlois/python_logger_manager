@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
-快速测试脚本 - 验证 macOS 兼容性
+快速测试脚本 - 验证 跨平台兼容性
 """
-
+import gc
+import logging
 import os
 import sys
 import tempfile
+import time
 import unittest
 from multiprocessing import Process
 
@@ -30,9 +32,33 @@ class TestCrossPlatformCompatibility(unittest.TestCase):
             self.log_path = f.name
 
     def tearDown(self):
-        # 清理
+        # 1. 关闭所有logger的handlers
+        for logger_name in list(logging.Logger.manager.loggerDict.keys()):
+            logger = logging.getLogger(logger_name)
+            handlers = logger.handlers[:]
+            for handler in handlers:
+                handler.close()
+                logger.removeHandler(handler)
+
+        # 2. 关闭root logger的handlers
+        for handler in logging.root.handlers[:]:
+            handler.close()
+            logging.root.removeHandler(handler)
+
+        # 3. 强制垃圾回收，确保文件句柄被释放
+        gc.collect()
+
+        # 4. Windows可能需要短暂等待文件句柄释放
+        time.sleep(0.1)
+
+        # 5. 清理临时文件
         if os.path.exists(self.log_path):
-            os.remove(self.log_path)
+            try:
+                os.remove(self.log_path)
+            except PermissionError:
+                # 如果仍然失败，再等待一下重试
+                time.sleep(0.2)
+                os.remove(self.log_path)
 
     def test_basic_multiprocessing(self):
         """测试基本的多进程功能"""
@@ -54,7 +80,7 @@ class TestCrossPlatformCompatibility(unittest.TestCase):
         main_logger.info("所有子进程完成")
 
         # 验证日志
-        with open(self.log_path, 'r') as f:
+        with open(self.log_path, 'r', encoding='utf-8') as f:
             content = f.read()
             assert "主进程" in content, "缺少主进程日志"
             assert "Worker 0" in content, "缺少Worker 0日志"
@@ -74,7 +100,7 @@ class TestCrossPlatformCompatibility(unittest.TestCase):
             p.join()
 
         # 验证所有进程都写入了日志
-        with open(self.log_path, 'r') as f:
+        with open(self.log_path, 'r', encoding='utf-8') as f:
             content = f.read()
             for i in range(5):
                 assert f"Worker {i}" in content, f"缺少Worker {i}日志"

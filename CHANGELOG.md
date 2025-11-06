@@ -2,6 +2,23 @@
 
 All notable changes to the logger_manager project will be documented in this file.
 
+## [1.0.2] - 2025-11-06
+
+### Fixed
+- **Windows兼容性问题**: 修复了在Windows上运行单元测试时的 `PermissionError: [WinError 32]` 错误
+  - 在 `tearDown()` 方法中添加显式的文件句柄关闭逻辑
+  - 关闭所有logger的handlers后再删除临时文件
+  - 添加垃圾回收和重试机制，确保文件锁被正确释放
+
+### Added
+- 新增 `WINDOWS_FIX.md` 文档，详细说明Windows文件锁定机制和解决方案
+- 在 `README.md` 中添加Windows兼容性说明
+
+### Technical Details
+- **问题根源**: Windows使用硬锁定机制，不允许删除正在被打开的文件
+- **解决方案**: 在删除前显式关闭所有文件句柄，并等待系统释放文件锁
+- **影响范围**: 仅影响测试清理代码，核心功能无变化
+
 ## [1.0.1] - 2025-11-06
 
 ### Fixed
@@ -12,7 +29,7 @@ All notable changes to the logger_manager project will be documented in this fil
 
 ### Added
 - 新增 `MACOS_FIX.md` 文档，详细说明macOS兼容性问题和解决方案
-- 新增 `quick_test_macos.py` 快速测试脚本，用于验证跨平台兼容性
+- 新增 `test_cross_platform_compatibility.py` 快速测试脚本，用于验证跨平台兼容性
 - 在 `README.md` 中添加跨平台兼容性说明
 
 ### Technical Details

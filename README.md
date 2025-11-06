@@ -293,10 +293,17 @@ python example_usage.py
 - macOS (10.14+)
 - Windows (10+)
 
-**注意事项：**
-- 在 macOS 和 Windows 上，multiprocessing 使用 `spawn` 启动模式
-- 所有多进程函数都已在模块级别定义，确保可以被正确序列化
-- 详见 [MACOS_FIX.md](MACOS_FIX.md) 了解技术细节
+**平台特定说明：**
+
+### macOS
+- multiprocessing 使用 `spawn` 启动模式
+- 所有多进程函数已在模块级别定义
+- 详见 [MACOS_COMPATIBILITY.md](MACOS_COMPATIBILITY.md)
+
+### Windows
+- 文件系统使用硬锁定机制
+- 测试中已正确处理文件句柄关闭
+- 详见 [WINDOWS_FIX.md](WINDOWS_FIX.md)
 
 ## 故障排除
 
@@ -328,6 +335,22 @@ def main():
 ```
 
 详细说明请参考 [MACOS_COMPATIBILITY.md](MACOS_COMPATIBILITY.md)
+
+### Windows 上的 "PermissionError" 错误
+
+如果你在 Windows 上遇到类似错误：
+```
+PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无法访问。
+```
+
+**原因：** Windows文件系统在文件被打开时会锁定文件，禁止删除。
+
+**解决方案：** 单元测试已包含正确的文件句柄清理逻辑。如果在你的代码中遇到此问题，请确保：
+- 显式关闭所有logger的handlers
+- 在删除文件前调用 `handler.close()`
+- 必要时使用 `gc.collect()` 和短暂的 `time.sleep()`
+
+详细说明请参考 [WINDOWS_FIX.md](WINDOWS_FIX.md)
 
 ### 快速测试
 
