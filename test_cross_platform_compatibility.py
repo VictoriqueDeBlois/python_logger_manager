@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from multiprocessing import Process
+
 from logger_manager import get_logger
 
 
@@ -15,6 +16,7 @@ def _simple_worker(log_path, worker_id):
     """简单的工作进程"""
     logger = get_logger(log_path, name=f"worker_{worker_id}")
     logger.info(f"Worker {worker_id} - PID: {os.getpid()}")
+
 
 class TestCrossPlatformCompatibility(unittest.TestCase):
 
