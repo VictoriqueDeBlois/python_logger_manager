@@ -34,7 +34,7 @@ class LoggerManager:
     _path_to_pids = None  # 日志路径 -> PID集合
     _logger_cache = None  # (日志路径, PID) -> Logger名称
     _mp_lock = None  # 多进程锁
-
+    
     def __new__(cls):
         """单例模式实现"""
         if cls._instance is None:
@@ -86,18 +86,19 @@ class LoggerManager:
         """规范化日志路径"""
         return str(Path(log_path).resolve())
 
-    def _create_logger(self, log_path: str, logger_name: str) -> logging.Logger:
+    def _create_logger(self, log_path: str, logger_name: str, display_name: str) -> logging.Logger:
         """
         创建新的日志对象
         
         Args:
             log_path: 日志文件路径
-            logger_name: 日志器名称
+            logger_name: 内部使用的唯一logger名称（包含路径和PID）
+            display_name: 日志中显示的友好名称
             
         Returns:
             配置好的Logger对象
         """
-        # 创建logger
+        # 创建logger（使用唯一的内部名称）
         logger = logging.getLogger(logger_name)
         logger.setLevel(self.log_level)
 
@@ -108,6 +109,20 @@ class LoggerManager:
         log_dir = Path(log_path).parent
         log_dir.mkdir(parents=True, exist_ok=True)
 
+        # 自定义Filter来修改logger名称的显示
+        class DisplayNameFilter(logging.Filter):
+            def __init__(self, display_name):
+                super().__init__()
+                self.display_name = display_name
+
+            def filter(self, record):
+                # 修改record的name属性为显示名称
+                record.name = self.display_name
+                return True
+
+        # 添加Filter
+        logger.addFilter(DisplayNameFilter(display_name))
+        
         # 日志格式
         formatter = logging.Formatter(
             fmt='[%(asctime)s] [%(levelname)s] [PID:%(process)d] [%(name)s] - %(message)s',
@@ -143,38 +158,45 @@ class LoggerManager:
         
         Args:
             log_path: 日志文件路径
-            name: 日志器的自定义名称（可选）
+            name: 日志器的显示名称（可选，只用于日志输出显示）
             
         Returns:
             Logger对象
         """
         # 规范化路径
         log_path = self._normalize_path(log_path)
-        current_pid = self.current_pid
 
+        # 获取真实的当前进程PID（解决进程池问题）
+        current_pid = os.getpid()
+        
         with LoggerManager._mp_lock:
-            # 检查缓存
+            # 生成唯一的内部logger名称（使用路径+PID，确保唯一性）
+            # 这个名称只用于logging系统内部识别，不会显示在日志中
+            internal_logger_name = f"_logger_{abs(hash(log_path))}_{current_pid}"
+
+            # 检查缓存（使用路径+PID作为key）
             cache_key = f"{log_path}:{current_pid}"
 
             # 情况4: 日志路径存在，且PID也存在 - 返回已有logger
             if cache_key in LoggerManager._logger_cache:
-                logger_name = LoggerManager._logger_cache[cache_key]
-                logger = logging.getLogger(logger_name)
-
+                cached_logger_name = LoggerManager._logger_cache[cache_key]
+                logger = logging.getLogger(cached_logger_name)
+                
                 # 确保logger有handlers（可能被清除过）
                 if not logger.handlers:
-                    logger = self._create_logger(log_path, logger_name)
-
+                    # 需要重新创建，但使用缓存的名称
+                    display_name = name if name else Path(log_path).stem
+                    logger = self._create_logger(log_path, cached_logger_name, display_name)
+                
                 return logger
 
-            # 生成logger名称
+            # 生成显示名称（用于日志输出）
             if name:
-                logger_name = f"{name}_pid{current_pid}"
+                display_name = name
             else:
-                # 使用路径和PID生成唯一名称
-                path_name = Path(log_path).stem
-                logger_name = f"{path_name}_pid{current_pid}"
-
+                # 使用文件名作为默认显示名称
+                display_name = Path(log_path).stem
+            
             # 情况3和5: 日志路径存在但PID不存在 - 多进程场景
             if log_path in LoggerManager._path_to_pids:
                 pids = set(LoggerManager._path_to_pids[log_path])
@@ -185,11 +207,11 @@ class LoggerManager:
                 LoggerManager._path_to_pids[log_path] = [current_pid]
 
             # 创建新logger
-            logger = self._create_logger(log_path, logger_name)
-
+            logger = self._create_logger(log_path, internal_logger_name, display_name)
+            
             # 缓存logger信息
-            LoggerManager._logger_cache[cache_key] = logger_name
-
+            LoggerManager._logger_cache[cache_key] = internal_logger_name
+            
             return logger
 
     def get_path_info(self, log_path: str) -> Dict:

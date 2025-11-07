@@ -5,24 +5,22 @@
 ## 主要特性
 
 ✅ **智能日志对象管理**
-
 - 自动跟踪日志路径与进程PID的映射关系
+- 内部名称与显示名称分离，确保唯一性
 - 同一进程同一路径复用日志对象
-- 不同进程同一路径创建独立日志对象
+- 不同进程或不同路径创建独立日志对象
+- 完美支持进程池（Pool）场景
 
 ✅ **多进程安全**
-
 - 使用 `multiprocessing.Manager` 实现跨进程数据共享
 - 使用 `multiprocessing.Lock` 保证并发安全
 - 使用 `RotatingFileHandler` 支持多进程写入
 
 ✅ **环境变量配置**
-
 - `LOG_LEVEL`: 控制日志级别 (DEBUG/INFO/WARNING/ERROR/CRITICAL)
 - `LOG_CONSOLE`: 控制是否输出到控制台 (true/false)
 
 ✅ **单例模式**
-
 - 全局唯一的日志管理器实例
 - 线程安全的单例实现
 
@@ -74,6 +72,31 @@ if __name__ == "__main__":
     main_logger.info("所有工作完成")
 ```
 
+### 进程池使用
+
+```python
+from multiprocessing import Pool
+from logger_manager import get_logger
+
+
+def pool_worker(task_id):
+    # 在进程池中使用，PID会正确显示为子进程的真实PID
+    logger = get_logger("/var/log/pool.log", name=f"Task-{task_id}")
+    logger.info(f"处理任务 {task_id}")
+
+    # 执行任务...
+    result = process_task(task_id)
+
+    logger.info(f"任务 {task_id} 完成")
+    return result
+
+
+if __name__ == "__main__":
+    # 使用进程池处理任务
+    with Pool(processes=4) as pool:
+        results = pool.map(pool_worker, range(20))
+```
+
 ### 查看日志路径信息
 
 ```python
@@ -103,7 +126,6 @@ set LOG_LEVEL=DEBUG
 ```
 
 可选值：
-
 - `DEBUG`: 最详细的日志信息
 - `INFO`: 一般信息（默认）
 - `WARNING`: 警告信息
@@ -161,12 +183,10 @@ export LOG_CONSOLE=false
 获取或创建日志对象。
 
 **参数:**
-
 - `log_path` (str): 日志文件路径
 - `name` (str, optional): 日志器名称
 
 **返回:**
-
 - `logging.Logger`: 配置好的日志对象
 
 #### `get_path_info(log_path)`
@@ -174,11 +194,9 @@ export LOG_CONSOLE=false
 获取日志路径的详细信息。
 
 **参数:**
-
 - `log_path` (str): 日志文件路径
 
 **返回:**
-
 - `dict`: 包含路径、PIDs列表和进程数的字典
 
 #### `cleanup_current_process()`
@@ -197,13 +215,11 @@ export LOG_CONSOLE=false
 ## 日志格式
 
 默认日志格式：
-
 ```
 [2025-11-06 10:30:45] [INFO] [PID:1234] [myapp_pid1234] - 这是一条日志消息
 ```
 
 包含信息：
-
 - 时间戳
 - 日志级别
 - 进程ID
@@ -300,7 +316,6 @@ python example_usage.py
 ## 跨平台兼容性
 
 ✅ **完全兼容以下操作系统：**
-
 - Linux (Ubuntu, CentOS, etc.)
 - macOS (10.14+)
 - Windows (10+)
@@ -308,13 +323,11 @@ python example_usage.py
 **平台特定说明：**
 
 ### macOS
-
 - multiprocessing 使用 `spawn` 启动模式
 - 所有多进程函数已在模块级别定义
 - 详见 [MACOS_COMPATIBILITY.md](MACOS_COMPATIBILITY.md)
 
 ### Windows
-
 - 文件系统使用硬锁定机制
 - 测试中已正确处理文件句柄关闭
 - 详见 [WINDOWS_FIX.md](WINDOWS_FIX.md)
@@ -324,7 +337,6 @@ python example_usage.py
 ### macOS 上的 "Can't pickle" 错误
 
 如果你在 macOS 上遇到类似错误：
-
 ```
 AttributeError: Can't pickle local object 'function_name'
 ```
@@ -334,20 +346,16 @@ AttributeError: Can't pickle local object 'function_name'
 **解决方案：** 确保所有作为 `Process` target 的函数都定义在模块级别（不要嵌套在其他函数内）。
 
 **示例：**
-
 ```python
 # ❌ 错误 - 局部函数
 def main():
     def worker():
         pass
-
     p = Process(target=worker)  # 会失败
-
 
 # ✅ 正确 - 模块级函数
 def worker():
     pass
-
 
 def main():
     p = Process(target=worker)  # 正常工作
@@ -358,7 +366,6 @@ def main():
 ### Windows 上的 "PermissionError" 错误
 
 如果你在 Windows 上遇到类似错误：
-
 ```
 PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无法访问。
 ```
@@ -366,7 +373,6 @@ PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无�
 **原因：** Windows文件系统在文件被打开时会锁定文件，禁止删除。
 
 **解决方案：** 单元测试已包含正确的文件句柄清理逻辑。如果在你的代码中遇到此问题，请确保：
-
 - 显式关闭所有logger的handlers
 - 在删除文件前调用 `handler.close()`
 - 必要时使用 `gc.collect()` 和短暂的 `time.sleep()`
@@ -376,7 +382,6 @@ PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无�
 ### 快速测试
 
 运行快速测试脚本验证安装：
-
 ```bash
 python test_cross_platform_compatibility.py
 ```
