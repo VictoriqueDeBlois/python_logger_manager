@@ -28,7 +28,8 @@ class LoggerManager:
 
     _instance = None
     _instance_lock = threading.Lock()
-
+    _init_lock = threading.Lock()  # 用于保护Manager初始化
+    
     # 多进程共享的数据结构
     _manager = None
     _path_to_pids = None  # 日志路径 -> PID集合
@@ -51,13 +52,25 @@ class LoggerManager:
 
         self._initialized = True
 
-        # 初始化多进程管理器
-        if LoggerManager._manager is None:
-            LoggerManager._manager = Manager()
-            LoggerManager._path_to_pids = LoggerManager._manager.dict()
-            LoggerManager._logger_cache = LoggerManager._manager.dict()
-            LoggerManager._mp_lock = LoggerManager._manager.Lock()
-
+        # 初始化多进程管理器（使用额外的锁保护）
+        with LoggerManager._init_lock:
+            if LoggerManager._manager is None:
+                try:
+                    LoggerManager._manager = Manager()
+                    LoggerManager._path_to_pids = LoggerManager._manager.dict()
+                    LoggerManager._logger_cache = LoggerManager._manager.dict()
+                    LoggerManager._mp_lock = LoggerManager._manager.Lock()
+                except AssertionError as e:
+                    raise
+                    # 在daemon进程中无法创建Manager，使用本地dict代替
+                    if "daemonic processes" in str(e):
+                        # 使用普通dict（非跨进程共享，但在当前进程内可用）
+                        LoggerManager._path_to_pids = {}
+                        LoggerManager._logger_cache = {}
+                        LoggerManager._mp_lock = threading.Lock()
+                    else:
+                        raise
+        
         # 从环境变量读取配置
         self.log_level = self._get_log_level()
         self.console_output = self._get_console_output()
@@ -285,7 +298,6 @@ class LoggerManager:
                 del LoggerManager._logger_cache[key]
 
 
-# 便捷函数
 def get_logger(log_path: str, name: Optional[str] = None) -> logging.Logger:
     """
     便捷函数：获取日志对象

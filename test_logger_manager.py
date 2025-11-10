@@ -24,7 +24,7 @@ def _test_worker(log_path):
     time.sleep(0.1)
 
 
-def pool_worker(args):
+def _pool_worker(args):
     """进程池工作函数"""
     worker_id, log_path = args
     logger = get_logger(log_path, name=f"pool_worker_{worker_id}")
@@ -353,14 +353,14 @@ class TestLoggerManager(unittest.TestCase):
         # 使用进程池
         with Pool(processes=3) as pool:
             args = [(i, log_path) for i in range(5)]
-            worker_pids = pool.imap_unordered(pool_worker, args)
+            worker_pids = pool.imap_unordered(_pool_worker, args)
+            # 检查日志中的PID是否是子进程的真实PID
+            unique_pids = set(worker_pids)
 
         # 验证日志
         with open(log_path, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        # 检查日志中的PID是否是子进程的真实PID
-        unique_pids = set(worker_pids)
         print(f"工作进程的PID: {unique_pids}")
 
         # 验证日志中显示的是真实PID而不是主进程PID
@@ -371,6 +371,28 @@ class TestLoggerManager(unittest.TestCase):
 
         print("✅ 测试通过：进程池中正确显示子进程的真实PID")
         print(f"   日志包含 {len(unique_pids)} 个不同的工作进程PID")
+
+    def test_process_pool(self):
+        """测试进程池中的日志功能"""
+        # 注意：init_manager()已在setUp中调用
+
+        # 使用进程池
+        with Pool(processes=2) as pool:
+            args = [(i, self.test_log_path) for i in range(3)]
+            worker_pids = pool.map(_pool_worker, args)
+
+        # 验证日志
+        with open(self.test_log_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        # 验证日志包含工作进程信息
+        self.assertIn("Worker", content)
+        self.assertIn("PID:", content)
+
+        # 验证有多个不同的PID
+        unique_pids = set(worker_pids)
+        self.assertGreater(len(unique_pids), 0)
+
 
     def test_display_name_simplification(self):
         """测试验证显示名称的简化"""

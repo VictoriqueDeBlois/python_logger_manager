@@ -2,17 +2,36 @@
 
 All notable changes to the logger_manager project will be documented in this file.
 
-## [1.1.0] - 2025-11-06
+## [1.1.1] - 2025-11-07
 
 ### Fixed
 
+- **进程池(Pool)兼容性问题**: 修复在Windows上使用`multiprocessing.Pool`时的"daemonic processes are not allowed to have
+  children"错误
+    - Pool的worker是daemon进程，无法在其中创建Manager子进程
+    - 解决方案：在主进程中提前调用`init_manager()`
+
+### Added
+
+- 新增 `init_manager()` 函数，用于在使用进程池前初始化Manager
+- 新增 `POOL_USAGE.md` 详细说明进程池使用方法
+- 在 `test_logger_manager.py` 中添加 `test_process_pool()` 测试用例
+
+### Technical Details
+
+- Manager必须在主进程（非daemon）中创建
+- 进程池worker（daemon进程）只能复用已有的Manager
+- `init_manager()`在`__init__`中增加异常处理，降级为本地dict
+
+## [1.1.0] - 2025-11-06
+
+### Fixed
 - **Logger命名逻辑重大修复**: 解决了三个关键的logger命名冲突问题
     - 相同`name`不同`path`时，不再共用同一个logger对象
     - 进程池中正确显示子进程的真实PID，而非父进程PID
     - 相同文件名（stem）不同路径时，不再共用logger对象
 
 ### Changed
-
 - **内部名称与显示名称分离**:
     - 内部使用 `_logger_{hash(path)}_{pid}` 确保全局唯一性
     - 显示名称使用用户指定的`name`或文件stem，简洁友好
@@ -22,12 +41,10 @@ All notable changes to the logger_manager project will be documented in this fil
     - 完美支持进程池（Pool）场景
 
 ### Added
-
 - 新增 `NAMING_FIX.md` 详细说明命名逻辑修复
 - 新增 `test_naming_fix.py` 验证所有修复场景
 
 ### Technical Details
-
 - 使用`logging.Filter`修改LogRecord的name属性
 - 路径hash值确保不同路径生成不同的内部名称
 - 每次调用时获取`os.getpid()`确保PID准确性

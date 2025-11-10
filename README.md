@@ -76,8 +76,10 @@ if __name__ == "__main__":
 
 ```python
 from multiprocessing import Pool
-from logger_manager import get_logger
+from logger_manager import init_manager, get_logger
 
+# ⚠️ 重要：使用进程池前必须调用init_manager()
+init_manager()
 
 def pool_worker(task_id):
     # 在进程池中使用，PID会正确显示为子进程的真实PID
@@ -90,12 +92,17 @@ def pool_worker(task_id):
     logger.info(f"任务 {task_id} 完成")
     return result
 
-
 if __name__ == "__main__":
     # 使用进程池处理任务
     with Pool(processes=4) as pool:
         results = pool.map(pool_worker, range(20))
 ```
+
+**注意：**
+
+- 使用 `multiprocessing.Pool` 前**必须**先调用 `init_manager()`
+- 这是因为Pool的worker是daemon进程，不能创建Manager子进程
+- 详见 [POOL_USAGE.md](POOL_USAGE.md) 了解更多
 
 ### 查看日志路径信息
 
