@@ -8,6 +8,7 @@ import os
 import tempfile
 import time
 import unittest
+from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import Pool, Process
 from pathlib import Path
 
@@ -35,7 +36,7 @@ def pool_worker(args):
     return pid
 
 
-def concurrent_worker(worker_id, temp_dir):
+def _concurrent_worker(worker_id, temp_dir):
     """并发工作进程"""
     log_path = os.path.join(temp_dir, f"worker_{worker_id}.log")
 
@@ -352,10 +353,10 @@ class TestLoggerManager(unittest.TestCase):
         # 使用进程池
         with Pool(processes=3) as pool:
             args = [(i, log_path) for i in range(5)]
-            worker_pids = pool.map(pool_worker, args)
+            worker_pids = pool.imap_unordered(pool_worker, args)
 
         # 验证日志
-        with open(log_path, 'r') as f:
+        with open(log_path, 'r', encoding='utf-8') as f:
             content = f.read()
 
         # 检查日志中的PID是否是子进程的真实PID
@@ -404,14 +405,15 @@ class TestLoggerManager(unittest.TestCase):
     def test_concurrent_loggers(self):
         """测试并发创建多个logger"""
 
-        processes = []
-        for i in range(5):
-            p = Process(target=concurrent_worker, args=(i, self.temp_dir))
-            p.start()
-            processes.append(p)
+        with ProcessPoolExecutor(max_workers=4) as executor:
+            results = executor.map(_concurrent_worker, range(5), [self.temp_dir] * 5)
 
-        for p in processes:
-            p.join()
+        for result in results:
+            log_path = result['log_path']
+            with open(log_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            assert f"[PID:{result['pid']}]" in content, f"日志应该包含工作进程PID {result['pid']}"
+            assert f"[Worker{result['worker_id']}]" in content, f"日志应该包含工作进程名称 Worker{result['worker_id']}"
 
         print("✅ 测试通过：并发创建多个logger无冲突")
 
