@@ -140,14 +140,14 @@ $ python test_logger_manager.py
 
 ### 核心修改
 
-1. **[logger_manager.py](logger_manager.py)** ⭐
+1. **[logger_manager.py](../logger_manager.py)** ⭐
     - 修改 `_create_logger()` 方法，增加 `display_name` 参数
     - 添加 `DisplayNameFilter` 类
     - 修改 `get_logger()` 方法，实时获取PID和生成唯一名称
 
 ### 新增测试
 
-2. **[test_logger_manager.py](test_logger_manager.py)** ⭐
+2. **[test_logger_manager.py](../tests/test_logger_manager.py)** ⭐
     - 5个全面的测试用例
         - test_same_name_different_path
         - test_no_name_different_path_same_stem
@@ -159,12 +159,12 @@ $ python test_logger_manager.py
 ### 文档更新
 
 3. **[NAMING_FIX.md](NAMING_FIX.md)** - 详细技术文档
-4. **[README.md](README.md)** - 添加进程池示例
-5. **[CHANGELOG.md](CHANGELOG.md)** - 记录v1.1.0版本
+4. **[README.md](../README.md)** - 添加进程池示例
+5. **[CHANGELOG.md](../CHANGELOG.md)** - 记录v1.1.0版本
 
 ### 向后兼容
 
-6. **[test_logger_manager.py](test_logger_manager.py)** ✅ 所有原有测试通过
+6. **[test_logger_manager.py](../tests/test_logger_manager.py)** ✅ 所有原有测试通过
 
 ## 📊 修复效果对比
 
@@ -273,8 +273,8 @@ logger2.info("来自app2")  # 写入 /app2/service.log
 想了解更多技术细节？请查看：
 
 - **[NAMING_FIX.md](NAMING_FIX.md)** - 完整的技术说明
-- **[test_logger_manager.py](test_logger_manager.py)** - 全面的测试用例
-- **[README.md](README.md)** - 更新后的使用指南
+- **[test_logger_manager.py](../tests/test_logger_manager.py)** - 全面的测试用例
+- **[README.md](../README.md)** - 更新后的使用指南
 
 ## 🎉 总结
 

@@ -332,12 +332,12 @@ python example_usage.py
 ### macOS
 - multiprocessing 使用 `spawn` 启动模式
 - 所有多进程函数已在模块级别定义
-- 详见 [MACOS_COMPATIBILITY.md](MACOS_COMPATIBILITY.md)
+- 详见 [MACOS_COMPATIBILITY.md](doc/MACOS_COMPATIBILITY.md)
 
 ### Windows
 - 文件系统使用硬锁定机制
 - 测试中已正确处理文件句柄关闭
-- 详见 [WINDOWS_FIX.md](WINDOWS_FIX.md)
+- 详见 [WINDOWS_FIX.md](doc/WINDOWS_FIX.md)
 
 ## 故障排除
 
@@ -368,7 +368,7 @@ def main():
     p = Process(target=worker)  # 正常工作
 ```
 
-详细说明请参考 [MACOS_COMPATIBILITY.md](MACOS_COMPATIBILITY.md)
+详细说明请参考 [MACOS_COMPATIBILITY.md](doc/MACOS_COMPATIBILITY.md)
 
 ### Windows 上的 "PermissionError" 错误
 
@@ -384,7 +384,7 @@ PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无�
 - 在删除文件前调用 `handler.close()`
 - 必要时使用 `gc.collect()` 和短暂的 `time.sleep()`
 
-详细说明请参考 [WINDOWS_FIX.md](WINDOWS_FIX.md)
+详细说明请参考 [WINDOWS_FIX.md](doc/WINDOWS_FIX.md)
 
 ### 快速测试
 

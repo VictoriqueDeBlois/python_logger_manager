@@ -300,9 +300,9 @@ logger.critical("Critical problems")  # 严重错误
 
 ## 📞 获取帮助
 
-- 查看完整文档: [README.md](README.md)
+- 查看完整文档: [README.md](../README.md)
 - macOS问题: [MACOS_COMPATIBILITY.md](MACOS_COMPATIBILITY.md)
-- 版本历史: [CHANGELOG.md](CHANGELOG.md)
+- 版本历史: [CHANGELOG.md](../CHANGELOG.md)
 - 运行示例: `python example_usage.py`
 - 运行测试: `python test_logger_manager.py`
 
